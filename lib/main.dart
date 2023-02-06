@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 import 'package:saral_hisab/style.dart';
 
 void main() {
@@ -28,6 +29,8 @@ class _MyCalculatorState extends State<MyCalculator> {
   var input = '';
   var output = '';
   var opearation = '';
+  var hideInput = false;
+  var outputSize = 34.0;
 
   onButtonClicked(value) {
     // for AC
@@ -35,8 +38,31 @@ class _MyCalculatorState extends State<MyCalculator> {
       input = "";
       output = "";
     } else if (value == "<") {
-      input = input.substring(0, input.length - 1);
+      if (input.isNotEmpty) {
+        input = input.substring(0, input.length - 1);
+      }
+    } else if (value == "=") {
+      if (input.isNotEmpty) {
+        var userInput = input;
+        Parser p = Parser();
+        Expression expression = p.parse(userInput);
+        ContextModel cm = ContextModel();
+        var finalValue = expression.evaluate(EvaluationType.REAL, cm);
+        output = finalValue.toString();
+        if (output.endsWith(".0")) {
+          output = output.substring(0, output.length - 2);
+        }
+        input = output;
+        hideInput = true;
+        outputSize = 52.0;
+      }
+    } else {
+      input += value;
+      hideInput = false;
+      outputSize = 34.0;
     }
+
+    setState(() {});
   }
 
   @override
@@ -55,7 +81,7 @@ class _MyCalculatorState extends State<MyCalculator> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    input,
+                    hideInput ? '' : input,
                     style: const TextStyle(fontSize: 48.0, color: Colors.white),
                   ),
                   const SizedBox(
@@ -64,7 +90,8 @@ class _MyCalculatorState extends State<MyCalculator> {
                   Text(
                     output,
                     style: TextStyle(
-                        fontSize: 34.0, color: Colors.white.withOpacity(0.7)),
+                        fontSize: outputSize,
+                        color: Colors.white.withOpacity(0.7)),
                   ),
                   const SizedBox(
                     height: 30,
